@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2003
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quantom", "Quantom\Quantom.csproj", "{1E4828A6-F854-4538-8C55-F6706C7A4646}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup", "Setup\Setup.vdproj", "{E601CABB-6D86-4AEC-A324-11A11AA56CB8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1E4828A6-F854-4538-8C55-F6706C7A4646}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E4828A6-F854-4538-8C55-F6706C7A4646}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E4828A6-F854-4538-8C55-F6706C7A4646}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E4828A6-F854-4538-8C55-F6706C7A4646}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E601CABB-6D86-4AEC-A324-11A11AA56CB8}.Debug|Any CPU.ActiveCfg = Debug
+		{E601CABB-6D86-4AEC-A324-11A11AA56CB8}.Release|Any CPU.ActiveCfg = Release
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F26648F2-401F-475D-A011-2303132EA614}
+	EndGlobalSection
+EndGlobal
