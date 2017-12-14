@@ -9,11 +9,18 @@ using System.Windows;
 
 namespace Quantom
 {
-    private TaskbarIcon tb;
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
     public partial class App : Application
     {
+        private TaskbarIcon notifyIcon;
+
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            //create the notifyicon (it's a resource declared in NotifyIconResources.xaml
+            notifyIcon = (TaskbarIcon)Resources["TrayIcon"];
+            base.OnStartup(e);
+        }
     }
 }
