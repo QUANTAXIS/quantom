@@ -22,5 +22,11 @@ namespace Quantom
             notifyIcon = (TaskbarIcon)Resources["TrayIcon"];
             base.OnStartup(e);
         }
+
+        protected override void OnExit(ExitEventArgs e)
+        {
+            notifyIcon.Dispose(); //the icon would clean up automatically, but this is cleaner
+            base.OnExit(e);
+        }
     }
 }
