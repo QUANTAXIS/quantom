@@ -9,40 +9,50 @@
         Title="Quantom for Quantaxis" Height="350" Width="525">
     <Grid>
         <Grid.DataContext>
-            <local:QuantaxisViewModel/>
+            <local:MainViewModel/>
         </Grid.DataContext>
         <StackPanel Orientation="Vertical" Width="363" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Center" Margin="77,28,77,93">
             <DockPanel>
                 <Label Content="MongoDB IP:"/>
-                <TextBlock TextWrapping="Wrap" VerticalAlignment="Center">
-                    <Run Foreground="Blue" FontFamily="Consolas" Text="{Binding MongoIP}"/>
-                </TextBlock>
+                <TextBlock TextWrapping="Wrap"  
+                           VerticalAlignment="Center" 
+                           IsEnabled="True" 
+                           Foreground="Blue" FontFamily="Consolas"
+                           Text="{Binding MongoIP}"/>
             </DockPanel>
             <DockPanel>
                 <Label Content="MongoDB Port:"/>
-                <TextBlock TextWrapping="Wrap"  VerticalAlignment="Center">                    
-                    <Run Foreground="Blue" FontFamily="Consolas"  Text="{Binding MongoPort}"/>
-                </TextBlock>
+                <TextBlock TextWrapping="Wrap"  
+                           VerticalAlignment="Center" 
+                           IsEnabled="False" 
+                           Foreground="Blue" FontFamily="Consolas"
+                           Text="{Binding MongoPort, Mode=OneWay}"/>
             </DockPanel>
             <DockPanel>
                 <Label Content="MongoDB DataBase Name:"/>
-                <TextBlock TextWrapping="Wrap"  VerticalAlignment="Center">
-                    <Run Foreground="Blue" FontFamily="Consolas" Text="{Binding MongoDBName}"/>
-                </TextBlock>
+                <TextBlock TextWrapping="Wrap"  
+                           VerticalAlignment="Center" 
+                           IsEnabled="False" 
+                           Foreground="Blue" FontFamily="Consolas"
+                           Text="{Binding MongoDBName, Mode=OneWay}"/>
             </DockPanel>
         </StackPanel>
-        <Button Content="启动" HorizontalAlignment="Left" Margin="94,259,0,0" 
+        <Button Content="启动" 
+                HorizontalAlignment="Left" 
+                Margin="94,259,0,0" 
                 VerticalAlignment="Top" 
-                Width="75" RenderTransformOrigin="2.406,0.523"/>
+                Width="75"/>
         <Button Content="修改设置" 
-                HorizontalAlignment="Left" Margin="214,259,0,0" 
+                HorizontalAlignment="Left" 
+                Margin="214,259,0,0" 
                 VerticalAlignment="Top" Width="75" 
-                RenderTransformOrigin="-0.117,0.764"/>
+                RenderTransformOrigin="-0.117,0.764" 
+                Command="{Binding OpenSettingWindow}"/>
         <Button Content="下载/更新" 
                 HorizontalAlignment="Left" 
                 VerticalAlignment="Top" 
                 Width="75" 
                 Margin="335,259,0,0" 
-                Click="Download_Or_Update"/>
+                Command="{Binding DownloadOrUpdate}"/>
     </Grid>
 </Window>
