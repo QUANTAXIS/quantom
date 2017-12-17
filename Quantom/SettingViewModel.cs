@@ -66,9 +66,9 @@ namespace Quantom
                 File.WriteAllText("settings.json", JsonConvert.SerializeObject(settings));
                 ((Window)obj).Close();
             }
-            catch
+            catch(Exception ex)
             {
-                MessageBox.Show("无法写入 settings.json 文件");
+                MessageBox.Show(ex.Message);
             }
         }
     }
