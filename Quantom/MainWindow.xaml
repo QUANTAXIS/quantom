@@ -1,12 +1,48 @@
-﻿<Window x:Class="Quantom.MainWindow"
+﻿<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Quantom"
+        xmlns:Properties="clr-namespace:Quantom.Properties" x:Class="Quantom.MainWindow"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="Quantom for Quantaxis" Height="350" Width="525">
     <Grid>
-        
+        <Grid.DataContext>
+            <local:QuantaxisViewModel/>
+        </Grid.DataContext>
+        <StackPanel Orientation="Vertical" Width="363" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Center" Margin="77,28,77,93">
+            <DockPanel>
+                <Label Content="MongoDB IP:"/>
+                <TextBlock TextWrapping="Wrap" VerticalAlignment="Center">
+                    <Run Foreground="Blue" FontFamily="Consolas" Text="{Binding MongoIP}"/>
+                </TextBlock>
+            </DockPanel>
+            <DockPanel>
+                <Label Content="MongoDB Port:"/>
+                <TextBlock TextWrapping="Wrap"  VerticalAlignment="Center">                    
+                    <Run Foreground="Blue" FontFamily="Consolas"  Text="{Binding MongoPort}"/>
+                </TextBlock>
+            </DockPanel>
+            <DockPanel>
+                <Label Content="MongoDB DataBase Name:"/>
+                <TextBlock TextWrapping="Wrap"  VerticalAlignment="Center">
+                    <Run Foreground="Blue" FontFamily="Consolas" Text="{Binding MongoDBName}"/>
+                </TextBlock>
+            </DockPanel>
+        </StackPanel>
+        <Button Content="启动" HorizontalAlignment="Left" Margin="94,259,0,0" 
+                VerticalAlignment="Top" 
+                Width="75" RenderTransformOrigin="2.406,0.523"/>
+        <Button Content="修改设置" 
+                HorizontalAlignment="Left" Margin="214,259,0,0" 
+                VerticalAlignment="Top" Width="75" 
+                RenderTransformOrigin="-0.117,0.764"/>
+        <Button Content="下载/更新" 
+                HorizontalAlignment="Left" 
+                VerticalAlignment="Top" 
+                Width="75" 
+                Margin="335,259,0,0" 
+                Click="Download_Or_Update"/>
     </Grid>
 </Window>

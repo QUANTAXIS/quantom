@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quantom", "Quantom\Quantom.csproj", "{1E4828A6-F854-4538-8C55-F6706C7A4646}"
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup", "Setup\Setup.vdproj", "{E601CABB-6D86-4AEC-A324-11A11AA56CB8}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1E4828A6-F854-4538-8C55-F6706C7A4646} = {1E4828A6-F854-4538-8C55-F6706C7A4646}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
