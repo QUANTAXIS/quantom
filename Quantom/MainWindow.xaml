@@ -18,7 +18,7 @@
                            VerticalAlignment="Center" 
                            IsEnabled="True" 
                            Foreground="Blue" FontFamily="Consolas"
-                           Text="{Binding MongoIP}"/>
+                           Text="{Binding MongoIP, Mode=OneWay}"/>
             </DockPanel>
             <DockPanel>
                 <Label Content="MongoDB Port:"/>
@@ -41,7 +41,8 @@
                 HorizontalAlignment="Left" 
                 Margin="94,259,0,0" 
                 VerticalAlignment="Top" 
-                Width="75"/>
+                Width="75"
+                Command="{Binding StartQuantaxis}"/>
         <Button Content="修改设置" 
                 HorizontalAlignment="Left" 
                 Margin="214,259,0,0" 

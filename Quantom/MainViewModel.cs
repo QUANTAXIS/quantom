@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -40,6 +41,7 @@ namespace Quantom
             }
             _OpenSettingWindow = new RelayCommand(__OpenSettingWindow, CanSetSettings);
             _DownloadOrUpdate = new RelayCommand(__DownloadOrUpdate, CanSetSettings);
+            _StartQuantaxis = new RelayCommand(__StartQuantaxis, CanSetSettings);
         }
 
         public ICommand OpenSettingWindow
@@ -50,9 +52,13 @@ namespace Quantom
         {
             get { return _DownloadOrUpdate; }
         }
-
+        public ICommand StartQuantaxis
+        {
+            get { return _StartQuantaxis; }
+        }
         private readonly ICommand _OpenSettingWindow;
         private readonly ICommand _DownloadOrUpdate;
+        private readonly ICommand _StartQuantaxis;
         private void __OpenSettingWindow(object obj)
         {
             Window SettingWindow = new SettingWindow();
@@ -78,6 +84,14 @@ namespace Quantom
             }
         }
 
+        private void __StartQuantaxis(object obj)
+        {
+            MessageBox.Show("Start Quantaxis");
+            ProcessStartInfo info = new ProcessStartInfo("npm.exe");
+            info.WorkingDirectory = "quantaxis/QUANTAXIS/QUANTAXIS_Webkit";
+            info.Arguments = "run all";
+            Process.Start(info);
+        }
         public void FreshSetting(object sender, System.EventArgs e)
         {
             settings = JsonConvert.DeserializeObject<Settings>(File.ReadAllText("settings.json"));
