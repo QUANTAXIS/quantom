@@ -268,7 +268,7 @@ namespace Quantom
         {
             ProcessStartInfo info = new ProcessStartInfo(@"cmd.exe");
             info.WorkingDirectory = Path.Combine(QuantaxisDir, "QUANTAXIS_Webkit");
-            info.Arguments = "/c npm run all";
+            info.Arguments = "/c npm run install && npm run all";
             info.UseShellExecute = false;
             info.CreateNoWindow = true;
             process = new Process
