@@ -30,17 +30,13 @@ SolidCompression=yes
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
-Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
 
 [Files]
 Source: "D:\Workspace\quantom\Quantom\bin\Release\Quantom.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "D:\Workspace\quantom\Quantom\bin\Release\Hardcodet.Wpf.TaskbarNotification.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Workspace\quantom\Quantom\bin\Release\Hardcodet.Wpf.TaskbarNotification.pdb"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Workspace\quantom\Quantom\bin\Release\Hardcodet.Wpf.TaskbarNotification.xml"; DestDir: "{app}"; Flags: ignoreversion
 Source: "D:\Workspace\quantom\Quantom\bin\Release\Newtonsoft.Json.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Workspace\quantom\Quantom\bin\Release\Newtonsoft.Json.xml"; DestDir: "{app}"; Flags: ignoreversion
 Source: "D:\Workspace\quantom\Quantom\bin\Release\Quantom.exe.config"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Workspace\quantom\Quantom\bin\Release\Quantom.pdb"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
