@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Windows.Input;
-
-namespace Quantom
+ 
+namespace Quantom.Commands
 {
     /// <summary>
     /// A command whose sole purpose is to 
@@ -11,7 +11,7 @@ namespace Quantom
     /// default return value for the CanExecute
     /// method is 'true'.
     /// </summary>
-    public class RelayCommand : ICommand
+    class RelayCommand : ICommand
     {
         #region Fields
 

@@ -5,16 +5,16 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace Quantom
+namespace Quantom.Commands
 {
     class ToggleMainWindowCommand : ICommand
     {        
         public void Execute(object parameter)
         {
-            if (App.Current.MainWindow.IsVisible)
-                App.Current.MainWindow.Hide();
+            if (Application.Current.MainWindow.IsVisible)
+                Application.Current.MainWindow.Hide();
             else
-                App.Current.MainWindow.Show();
+                Application.Current.MainWindow.Show();
         }
 
         public bool CanExecute(object parameter)

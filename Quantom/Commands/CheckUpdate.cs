@@ -7,11 +7,12 @@ using System.Windows.Input;
 
 namespace Quantom.Commands
 {
-    class ShutDown : ICommand
+    class CheckUpdate : ICommand
     {
         public void Execute(object parameter)
         {
-            Application.Current.Shutdown();
+            MainWindow main = (MainWindow) Application.Current.MainWindow;
+            main.CheckUpdate();
         }
 
         public bool CanExecute(object parameter)

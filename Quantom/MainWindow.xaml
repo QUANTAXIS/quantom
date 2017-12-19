@@ -54,6 +54,7 @@
                 VerticalAlignment="Top" 
                 Width="75" 
                 Margin="335,259,0,0" 
+                IsEnabled="{Binding NotLoading}"
                 Command="{Binding DownloadOrUpdate}"/>
     </Grid>
 </Window>
