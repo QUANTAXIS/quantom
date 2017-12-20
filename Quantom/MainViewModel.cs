@@ -5,11 +5,14 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using Newtonsoft.Json;
 using Quantom.Commands;
+using Unosquare.Labs.EmbedIO;
+using Unosquare.Labs.EmbedIO.Modules;
 
 namespace Quantom
 {
@@ -18,10 +21,13 @@ namespace Quantom
         public event PropertyChangedEventHandler PropertyChanged;
         string AppDir = AppDomain.CurrentDomain.BaseDirectory;
         string PATH = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Machine) + ";" + Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User);
-        string QuantaxisDir;
+        string QuantaxisDir, FrontendRoot;
         private bool Installed;
+        private CancellationTokenSource frontendCancellor;
+        private WebServer frontendServer;
         private bool Loading = false;
         public bool Running = false;
+        private Task frontendTask = Task.CompletedTask;
         private Process process;
         private string _output;
         private Settings settings = new Settings();
@@ -29,6 +35,8 @@ namespace Quantom
         private readonly ICommand _DownloadOrUpdate;
         private readonly ICommand _StartQuantaxis;
         private readonly ICommand _StopQuantaxis;
+        private readonly ICommand _StartFrontend;
+        private readonly ICommand _StopFrontend;
 
         public bool NotLoading
         {
@@ -49,6 +57,16 @@ namespace Quantom
                     return "关闭";
                 else
                     return "启动";
+            }
+        }
+        public string FrontendLabel
+        {
+            get
+            {
+                if (frontendTask.IsCompleted)
+                    return "启动网页服务"; 
+                else
+                    return "关闭网页服务";
             }
         }
         public string Output
@@ -74,11 +92,14 @@ namespace Quantom
                 File.WriteAllText("settings.json", JsonConvert.SerializeObject(settings));
             }
             QuantaxisDir = Path.Combine(AppDir, "quantaxis");
-            Installed = Directory.Exists(QuantaxisDir);
+            FrontendRoot = Path.Combine(AppDir, "frontend");
+            Installed = Directory.Exists(QuantaxisDir);            
             _OpenSettingWindow = new RelayCommand(__OpenSettingWindow, CanSetSettings);
             _DownloadOrUpdate = new RelayCommand(__DownloadOrUpdate, CanSetSettings);
             _StartQuantaxis = new RelayCommand(__StartQuantaxis, CanSetSettings);
             _StopQuantaxis = new RelayCommand(__StopQuantaxis, CanSetSettings);
+            _StartFrontend = new RelayCommand(__StartFrontend, CanSetSettings);
+            _StopFrontend = new RelayCommand(__StopFrontend, CanSetSettings);
         }
 
         public ICommand OpenSettingWindow
@@ -97,6 +118,16 @@ namespace Quantom
                     return _StopQuantaxis;
                 else
                     return _StartQuantaxis;
+            }
+        }
+        public ICommand ToggleFrontend
+        {
+            get
+            {
+                if (frontendTask.IsCompleted)
+                    return _StartFrontend;
+                else
+                    return _StopFrontend;
             }
         }
         private void __OpenSettingWindow(object obj)
@@ -242,6 +273,7 @@ namespace Quantom
                         MessageBox.Show("Git clone failed");
                         return false;
                     }
+                    Installed = Directory.Exists(QuantaxisDir);
                     return true;
                 }
             }
@@ -378,6 +410,32 @@ namespace Quantom
             OnPropertyChanged("MongoIP");
             OnPropertyChanged("MongoPort");
             OnPropertyChanged("MongoDBName");
+        }
+        private void __StartFrontend(object obj)
+        {
+            if (!Directory.Exists(FrontendRoot))
+            {
+                MessageBox.Show("frontend folder is missing.");
+                return;
+            }
+            var url = "http://localhost:8080/";
+            frontendServer = new WebServer(url);
+            frontendServer.RegisterModule(new StaticFilesModule(FrontendRoot));
+            frontendServer.Module<StaticFilesModule>().UseRamCache = true;
+            frontendServer.Module<StaticFilesModule>().DefaultExtension = ".html";
+            // We don't need to add the line below. The default document is always index.html.
+            //server.Module<Modules.StaticFilesWebModule>().DefaultDocument = "index.html";
+            frontendCancellor = new CancellationTokenSource();
+            frontendTask = frontendServer.RunAsync(frontendCancellor.Token);
+            OnPropertyChanged("FrontendLabel");
+            OnPropertyChanged("ToggleFrontend");
+        }
+        public void __StopFrontend(object obj)
+        {
+            frontendCancellor.Cancel();
+            frontendTask.Wait();
+            OnPropertyChanged("FrontendLabel");
+            OnPropertyChanged("ToggleFrontend");
         }
     }    
 }
