@@ -16,17 +16,29 @@ namespace Quantom
     public class MainViewModel: INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
-        string AppDir = System.AppDomain.CurrentDomain.BaseDirectory;
+        string AppDir = AppDomain.CurrentDomain.BaseDirectory;
+        string PATH = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Machine) + ";" + Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User);
         string QuantaxisDir;
         private bool Installed;
         private bool Loading = false;
+        public bool Running = false;
+        private Process process;
+        private string _output;
+        private Settings settings = new Settings();
+        private readonly ICommand _OpenSettingWindow;
+        private readonly ICommand _DownloadOrUpdate;
+        private readonly ICommand _StartQuantaxis;
+        private readonly ICommand _StopQuantaxis;
+
         public bool NotLoading
         {
             get { return !Loading; }
             set { Loading = !value; }
         }
-        private Settings settings = new Settings();
-        public string MongoIP { get { return settings.MongoIP; } set { settings.MongoIP = value; } }
+        public string MongoIP {
+            get { return settings.MongoIP; }
+            set { settings.MongoIP = value; }
+        }
         public string MongoPort { get { return settings.MongoPort; } }
         public string MongoDBName { get { return settings.MongoDBName; } }
         public string ToggleLabel
@@ -39,8 +51,10 @@ namespace Quantom
                     return "启动";
             }
         }
-        public bool Running = false;
-        private Process process;
+        public string Output
+        {
+            get { return _output; } set { _output = value; }
+        }
 
         protected virtual void OnPropertyChanged(string propertyName)
         {
@@ -85,10 +99,6 @@ namespace Quantom
                     return _StartQuantaxis;
             }
         }
-        private readonly ICommand _OpenSettingWindow;
-        private readonly ICommand _DownloadOrUpdate;
-        private readonly ICommand _StartQuantaxis;
-        private readonly ICommand _StopQuantaxis;
         private void __OpenSettingWindow(object obj)
         {
             Window SettingWindow = new SettingWindow();
@@ -102,6 +112,8 @@ namespace Quantom
 
         private async void __DownloadOrUpdate(object obj)
         {
+            _output = "";
+            OnPropertyChanged("Output");
             await Task.Run(() =>
             {
                 if (!CheckPythonVersion()) return;
@@ -132,11 +144,14 @@ namespace Quantom
                 RedirectStandardError = true,
                 CreateNoWindow = true
             };
+            start.Environment.Add("PATH", PATH);
             using (Process pro = Process.Start(start))
             {
                 using (StreamReader reader = pro.StandardError)
                 {
                     string result = reader.ReadToEnd();
+                    _output += result;
+                    OnPropertyChanged("Output");
                     if (result.Length > 10 && result.Substring(0, 8) == "'python'")
                     {
                         MessageBox.Show("Python 3 is not installed. Please install Python Anaconda");
@@ -157,11 +172,14 @@ namespace Quantom
                 RedirectStandardError = true,
                 CreateNoWindow = true
             };
+            start.Environment.Add("PATH", PATH);
             using (Process pro = Process.Start(start))
             {
                 using (StreamReader reader = pro.StandardError)
                 {
                     string result = reader.ReadToEnd();
+                    _output += result;
+                    OnPropertyChanged("Output");
                     if (result.Length > 10 && result.Substring(0, 6) == "'node'")
                     {
                         MessageBox.Show("Node.js is not installed. Please install Node.js");
@@ -182,11 +200,14 @@ namespace Quantom
                 RedirectStandardError = true,
                 CreateNoWindow = true
             };
+            start.Environment.Add("PATH", PATH);
             using (Process pro = Process.Start(start))
             {
                 using (StreamReader reader = pro.StandardError)
                 {
                     string result = reader.ReadToEnd();
+                    _output += result;
+                    OnPropertyChanged("Output");
                     if (result.Length > 10 && result.Substring(0, 5) == "'git'")
                     {
                         MessageBox.Show("Git is not installed. Please install Git");
@@ -208,11 +229,14 @@ namespace Quantom
                 RedirectStandardError = true,
                 CreateNoWindow = true
             };
+            start.Environment.Add("PATH", PATH);
             using (Process pro = Process.Start(start))
             {
                 using (StreamReader reader = pro.StandardError)
                 {
                     string result = reader.ReadToEnd();
+                    _output += result;
+                    OnPropertyChanged("Output");
                     if (result.Substring(0, 7) != "Cloning")
                     {
                         MessageBox.Show("Git clone failed");
@@ -233,12 +257,15 @@ namespace Quantom
                 RedirectStandardError = true,
                 CreateNoWindow = true
             };
+            start.Environment.Add("PATH", PATH);
             using (Process pro = Process.Start(start))
             {
                 using (StreamReader reader = pro.StandardError)
                 {
                     string result = reader.ReadToEnd();
-                    if (result.Length > 1) MessageBox.Show("Git pull update failed");                       
+                    _output += result;
+                    OnPropertyChanged("Output");
+                    if (result.Length > 1) MessageBox.Show("Git pull update failed");
                 }
             }
         }
@@ -254,23 +281,33 @@ namespace Quantom
                 RedirectStandardError = true,
                 CreateNoWindow = true
             };
+            start.Environment.Add("PATH", PATH);
             using (Process pro = Process.Start(start))
             {
                 using (StreamReader reader = pro.StandardError)
                 {
                     string result = reader.ReadToEnd();
-                    if (result.Length < 0) MessageBox.Show("Pip install Quantaxis failed");
+                    _output += result;
+                    OnPropertyChanged("Output");
+                    if (result.Length > 0)
+                    {
+                        MessageBox.Show("Pip install Quantaxis failed");
+                    }
+                    else MessageBox.Show("Quantaxis installed"); 
                 }
             }
         }
        
         private void __StartQuantaxis(object obj)
         {
-            ProcessStartInfo info = new ProcessStartInfo(@"cmd.exe");
-            info.WorkingDirectory = Path.Combine(QuantaxisDir, "QUANTAXIS_Webkit");
-            info.Arguments = "/c npm run install && npm run all";
-            info.UseShellExecute = false;
-            info.CreateNoWindow = true;
+            ProcessStartInfo info = new ProcessStartInfo(@"cmd.exe")
+            {
+                WorkingDirectory = Path.Combine(QuantaxisDir, "QUANTAXIS_Webkit"),
+                Arguments = "/c npm run install && npm run all",
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+            info.Environment.Add("PATH", PATH);
             process = new Process
             {
                 StartInfo = info,

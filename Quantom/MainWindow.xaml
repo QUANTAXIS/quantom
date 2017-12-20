@@ -6,12 +6,18 @@
         xmlns:local="clr-namespace:Quantom"
         xmlns:Properties="clr-namespace:Quantom.Properties" x:Class="Quantom.MainWindow"
         mc:Ignorable="d"
-        Title="Quantom for Quantaxis" Height="350" Width="525">
+        ResizeMode="NoResize"
+        Title="Quantom for Quantaxis" Height="350" Width="380">
     <Grid>
         <Grid.DataContext>
             <local:MainViewModel/>
         </Grid.DataContext>
-        <StackPanel Orientation="Vertical" Width="363" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Center" Margin="77,28,77,93">
+        <StackPanel Orientation="Vertical" 
+                    Width="360" 
+                    MinWidth="360"
+                    RenderTransformOrigin="0.5,0.5" 
+                    HorizontalAlignment="Center" 
+                    VerticalAlignment="Top">
             <DockPanel>
                 <Label Content="MongoDB IP:"/>
                 <TextBlock TextWrapping="Wrap"  
@@ -36,25 +42,28 @@
                            Foreground="Blue" FontFamily="Consolas"
                            Text="{Binding MongoDBName, Mode=OneWay}"/>
             </DockPanel>
+            <TextBox  Background="Black" 
+                          ScrollViewer.CanContentScroll="True"
+                           ScrollViewer.VerticalScrollBarVisibility="Auto"
+                           Width="Auto"
+                           Height="130" 
+                           Foreground="Green"
+                           TextWrapping="Wrap"                           
+                           Text="{Binding Output}"/>
+            <DockPanel Margin="5,10,5,0" HorizontalAlignment="Center">
+                <Button Content="{Binding ToggleLabel}" 
+                        Width="75"
+                        Margin="0,0,60,0"
+                        Command="{Binding ToggleQuantaxis}"/>
+                <Button Content="修改设置" 
+                        Width="75" 
+                        Command="{Binding OpenSettingWindow}"/>
+                <Button Content="下载/更新" 
+                        Width="75" 
+                        Margin="60,0,0,0"
+                        IsEnabled="{Binding NotLoading}"
+                        Command="{Binding DownloadOrUpdate}"/>
+            </DockPanel>
         </StackPanel>
-        <Button Content="{Binding ToggleLabel}" 
-                HorizontalAlignment="Left" 
-                Margin="94,259,0,0" 
-                VerticalAlignment="Top" 
-                Width="75"
-                Command="{Binding ToggleQuantaxis}"/>
-        <Button Content="修改设置" 
-                HorizontalAlignment="Left" 
-                Margin="214,259,0,0" 
-                VerticalAlignment="Top" Width="75" 
-                RenderTransformOrigin="-0.117,0.764" 
-                Command="{Binding OpenSettingWindow}"/>
-        <Button Content="下载/更新" 
-                HorizontalAlignment="Left" 
-                VerticalAlignment="Top" 
-                Width="75" 
-                Margin="335,259,0,0" 
-                IsEnabled="{Binding NotLoading}"
-                Command="{Binding DownloadOrUpdate}"/>
     </Grid>
 </Window>
