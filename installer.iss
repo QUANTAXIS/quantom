@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Quantom For Quantaxis"
-#define MyAppVersion "0.1.1"
+#define MyAppVersion "0.1.2"
 #define MyAppPublisher "Quantom"
 #define MyAppURL "https://github.com/hardywu/quantom"
 #define MyAppExeName "Quantom.exe"
