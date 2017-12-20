@@ -50,6 +50,21 @@ namespace Quantom
             e.Cancel = true;
             this.Hide();
         }
+        protected override void OnClosed(EventArgs e)
+        {
+           
+            ProcessStartInfo info = new ProcessStartInfo(@"cmd.exe")
+            {
+                Arguments = "/c forever stopall",
+                UseShellExecute = false, 
+                CreateNoWindow = true
+            };
+            info.Environment.Add("PATH", Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Machine) + ";" + Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User));
+            Process process = new Process() { StartInfo = info };
+            process.Start();
+            process.WaitForExit();
+            base.OnClosed(e);
+        }
 
         async public Task<bool> IsOutDated()
         {
