@@ -300,6 +300,11 @@ namespace Quantom
        
         private void __StartQuantaxis(object obj)
         {
+            if (!Installed)
+            {
+                MessageBox.Show("先下载Quantaxis. 请点击右边按钮");
+                return;
+            }
             _output = "";
             OnPropertyChanged("Output");
             ProcessStartInfo info = new ProcessStartInfo(@"cmd.exe")

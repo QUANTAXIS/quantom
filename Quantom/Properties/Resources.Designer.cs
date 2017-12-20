@@ -81,9 +81,9 @@ namespace Quantom.Properties {
         /// <summary>
         ///   Looks up a localized string similar to 2.
         /// </summary>
-        internal static string PathVersion {
+        internal static string PatchVersion {
             get {
-                return ResourceManager.GetString("PathVersion", resourceCulture);
+                return ResourceManager.GetString("PatchVersion", resourceCulture);
             }
         }
     }

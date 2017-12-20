@@ -77,7 +77,7 @@ namespace Quantom
                 version = JsonConvert.DeserializeObject<Models.VersionDetail>(_VersionString);
                 bool dated = version.MajorVersion > Int32.Parse(Properties.Resources.MajorVersion);
                 dated = dated || version.MinorVersion > Int32.Parse(Properties.Resources.MinorVersion);
-                dated = dated || version.PatchVersion > Int32.Parse(Properties.Resources.PathVersion);
+                dated = dated || version.PatchVersion > Int32.Parse(Properties.Resources.PatchVersion);
                 return dated;
             }
             else
