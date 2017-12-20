@@ -22,7 +22,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\{#MyAppName}
 DisableProgramGroupPage=yes
 OutputDir=D:\Workspace\quantom\dist
-OutputBaseFilename=quantom_setup
+OutputBaseFilename=quantom_for_quantaxis_v{#MyAppVersion}
 Compression=lzma
 SolidCompression=yes
 
