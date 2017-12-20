@@ -300,11 +300,52 @@ namespace Quantom
        
         private void __StartQuantaxis(object obj)
         {
+            _output = "";
+            OnPropertyChanged("Output");
             ProcessStartInfo info = new ProcessStartInfo(@"cmd.exe")
             {
                 WorkingDirectory = Path.Combine(QuantaxisDir, "QUANTAXIS_Webkit"),
-                Arguments = "/c npm run install && npm run all",
+                Arguments = "/c npm run install && npm install forever -g && forever start backend\\bin\\www && cd web && forever start build\\dev-server.js",
                 UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true
+            };
+            info.Environment.Add("PATH", PATH);
+            process = new Process
+            {
+                StartInfo = info,
+                EnableRaisingEvents = true
+            };
+            process.Exited += (sender, args) =>
+            {
+                process.Dispose();
+                Running = true;
+                OnPropertyChanged("ToggleLabel");
+                OnPropertyChanged("ToggleQuantaxis");
+            };
+            process.Start();
+            process.OutputDataReceived += new DataReceivedEventHandler(OutputHandler); 
+            process.BeginOutputReadLine();
+        }
+        private void OutputHandler(object sendingProcess, DataReceivedEventArgs outLine)
+        {
+            // Collect the sort command output.
+            if (!String.IsNullOrEmpty(outLine.Data))
+            {
+                _output += Environment.NewLine + outLine.Data;
+                OnPropertyChanged("Output");
+            }
+        }
+        public void __StopQuantaxis(object obj)
+        {
+            ProcessStartInfo info = new ProcessStartInfo(@"cmd.exe")
+            {
+                WorkingDirectory = Path.Combine(QuantaxisDir, "QUANTAXIS_Webkit"),
+                Arguments = "/c forever stopall",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
                 CreateNoWindow = true
             };
             info.Environment.Add("PATH", PATH);
@@ -320,14 +361,11 @@ namespace Quantom
                 OnPropertyChanged("ToggleLabel");
                 OnPropertyChanged("ToggleQuantaxis");
             };
-            Running = true;
-            OnPropertyChanged("ToggleLabel");
-            OnPropertyChanged("ToggleQuantaxis");
+            _output = "";
+            OnPropertyChanged("Output");
             process.Start();
-        }
-        private void __StopQuantaxis(object obj)
-        {
-            process.Kill();
+            process.OutputDataReceived += new DataReceivedEventHandler(OutputHandler);
+            process.BeginOutputReadLine();
         }
         public void FreshSetting(object sender, System.EventArgs e)
         {
