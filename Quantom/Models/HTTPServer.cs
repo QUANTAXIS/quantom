@@ -7,7 +7,11 @@ using System.IO;
 using System.Threading;
 
 namespace Quantom.Models
-{   
+{
+    /*
+     From https://gist.github.com/zezba9000/04054e3128e6af413e5bc8002489b2fe
+     Modified from: https://gist.github.com/aksakalli/9191056
+    */
     class HTTPServer
     {
         private static readonly string[] indexFiles =
