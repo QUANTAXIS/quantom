@@ -22,23 +22,24 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\{#MyAppName}
 DisableProgramGroupPage=yes
 OutputDir=D:\Workspace\quantom\dist
-OutputBaseFilename=quantom_for_quantaxis_v{#MyAppVersion}
+;OutputBaseFilename=quantom_for_quantaxis_v{#MyAppVersion}
 Compression=lzma
 SolidCompression=yes
 VersionInfoVersion={#MyAppVersion}
+ArchitecturesInstallIn64BitMode=x64
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
-
-[Files]
-Source: "D:\Workspace\quantom\Quantom\bin\Release\Quantom.exe"; DestDir: "{app}"; Flags: ignoreversion
+;Name: "install quantaxis python pkg"; Description: "install requests"; StatusMsg: "Installing requests..."; BeforeInstall: MyAfterInstall
+ 
+[Files] 
+Source: "D:\Workspace\quantom\Quantom\bin\Release\Quantom.exe"; DestDir: "{app}"; Flags: ignoreversion; 
+Source: "D:\Workspace\quantom\Quantom\bin\Release\Quantom.exe.config"; DestDir: "{app}"; Flags: ignoreversion
 Source: "D:\Workspace\quantom\Quantom\bin\Release\Hardcodet.Wpf.TaskbarNotification.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "D:\Workspace\quantom\Quantom\bin\Release\Newtonsoft.Json.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Workspace\quantom\Quantom\bin\Release\Quantom.exe.config"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Workspace\quantom\Quantom\quantaxisbackend.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "D:\Workspace\quantom\Quantom\frontend\*"; DestDir: "{app}\frontend"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
@@ -63,7 +64,7 @@ var
   ver: Cardinal;
 begin
   Result :=
-    not
+    not (
     (
     (RegKeyExists(
       HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Client')
@@ -77,33 +78,46 @@ begin
         RegQueryDWordValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full', 'Release', ver)
     )
     )
-    and (ver < 393295)     // .Net 4.6 Release DWORD
+    and (ver >= 393295))     // .Net 4.6 Release DWORD
 end;
 
 function PythonIsNotInstalled: Boolean;
 var
+  Names: TArrayOfString;
   ver: Cardinal;
 begin
   Result :=
     not
-    (
-    (RegKeyExists(
-      HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Client')
-    and
-        RegQueryDWordValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Client', 'Release', ver)
+    ((
+     (
+      RegKeyExists(HKCU, 'SOFTWARE\Software\Python\PythonCore')
+      and
+      RegKeyExists(HKCU, 'SOFTWARE\Software\Python\ContinuumAnalytics')
+      and
+      RegGetSubkeyNames(HKCU, 'SOFTWARE\Software\Python\PythonCore', Names)
+     )
+     or
+     (
+      RegKeyExists(HKLM, 'SOFTWARE\Software\Python\PythonCore')
+      and
+      RegKeyExists(HKLM, 'SOFTWARE\Software\Python\ContinuumAnalytics')
+      and
+      RegGetSubkeyNames(HKLM, 'SOFTWARE\Software\Python\PythonCore', Names)
+     ))
+     and (GetArrayLength(Names) = 1) 
+     and (Names[0] >= '3.6') 
     )
-    or
-    (RegKeyExists(
-      HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full')
-    and
-        RegQueryDWordValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full', 'Release', ver)
-    )
-    )
-    and (ver < 393295)     // .Net 4.6 Release DWORD
 end;
+
 
 var CancelWithoutPrompt: boolean;
 
+procedure MyAfterInstall();
+begin  
+    MsgBox('Should cancel because...',mbError,MB_OK)
+    CancelWithoutPrompt := true;
+    WizardForm.Close;
+end;
 
 procedure InitializeWizard;
 begin
