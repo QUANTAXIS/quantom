@@ -59,32 +59,5 @@ namespace Quantom.Properties {
                 resourceCulture = value;
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to 0.
-        /// </summary>
-        internal static string MajorVersion {
-            get {
-                return ResourceManager.GetString("MajorVersion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to 1.
-        /// </summary>
-        internal static string MinorVersion {
-            get {
-                return ResourceManager.GetString("MinorVersion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to 2.
-        /// </summary>
-        internal static string PatchVersion {
-            get {
-                return ResourceManager.GetString("PatchVersion", resourceCulture);
-            }
-        }
     }
 }

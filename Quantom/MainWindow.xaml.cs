@@ -54,16 +54,16 @@ namespace Quantom
         async public Task<bool> IsOutDated()
         {
             HttpClient client = new HttpClient();
-            Models.VersionDetail version;            
             HttpResponseMessage response = await client.GetAsync("https://raw.githubusercontent.com/hardywu/quantom/master/latestVersion.json");
+            System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            System.Reflection.AssemblyName assemblyName = assembly.GetName();
+            Version assemblyVersion = assemblyName.Version;
             if (response.IsSuccessStatusCode)
             {
-                string _VersionString = await response.Content.ReadAsStringAsync();
-                version = JsonConvert.DeserializeObject<Models.VersionDetail>(_VersionString);
-                bool dated = version.MajorVersion > Int32.Parse(Properties.Resources.MajorVersion);
-                dated = dated || version.MinorVersion > Int32.Parse(Properties.Resources.MinorVersion);
-                dated = dated || version.PatchVersion > Int32.Parse(Properties.Resources.PatchVersion);
-                return dated;
+                string content = await response.Content.ReadAsStringAsync();
+                Models.VersionDetail version;
+                version = JsonConvert.DeserializeObject<Models.VersionDetail>(content);
+                return assemblyVersion < new Version(version.version);
             }
             else
             {
