@@ -20,15 +20,18 @@ namespace Quantom
     {
         public event PropertyChangedEventHandler PropertyChanged;
         string AppDir = AppDomain.CurrentDomain.BaseDirectory;
-        string PATH = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Machine) + ";" + Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User);
-        string QuantaxisDir, FrontendRoot;
-        private bool Installed;
+        string PATH = 
+            Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Machine) + ";" + 
+            Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User);
+        private string QuantaxisDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "quantaxis"); 
+        private string FrontendRoot = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "frontend");
+        private string BackendFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "quantaxisbackend.exe");
         private CancellationTokenSource frontendCancellor;
         private WebServer frontendServer;
         private bool Loading = false;
-        public bool Running = false;
         private Task frontendTask = Task.CompletedTask;
-        private Process process;
+        private Task backendTask = Task.CompletedTask;
+        private Process backendProcess;
         private string _output;
         private Settings settings = new Settings();
         private readonly ICommand _OpenSettingWindow;
@@ -53,10 +56,10 @@ namespace Quantom
         {
             get
             {
-                if (Running)
-                    return "关闭";
-                else
+                if (backendTask.IsCompleted)
                     return "启动";
+                else
+                    return "关闭";
             }
         }
         public string FrontendLabel
@@ -90,10 +93,7 @@ namespace Quantom
             catch (FileNotFoundException)
             {
                 File.WriteAllText("settings.json", JsonConvert.SerializeObject(settings));
-            }
-            QuantaxisDir = Path.Combine(AppDir, "quantaxis");
-            FrontendRoot = Path.Combine(AppDir, "frontend");
-            Installed = Directory.Exists(QuantaxisDir);            
+            }                  
             _OpenSettingWindow = new RelayCommand(__OpenSettingWindow, CanSetSettings);
             _DownloadOrUpdate = new RelayCommand(__DownloadOrUpdate, CanSetSettings);
             _StartQuantaxis = new RelayCommand(__StartQuantaxis, CanSetSettings);
@@ -114,10 +114,10 @@ namespace Quantom
         {
             get
             {
-                if (Running)
-                    return _StopQuantaxis;
-                else
+                if (backendTask.IsCompleted)
                     return _StartQuantaxis;
+                else
+                    return _StopQuantaxis;
             }
         }
         public ICommand ToggleFrontend
@@ -148,11 +148,10 @@ namespace Quantom
             await Task.Run(() =>
             {
                 if (!CheckPythonVersion()) return;
-                if (!CheckNodeVersion()) return;
                 if (!CheckGitVersion()) return;
                 Loading = true;
                 OnPropertyChanged("NotLoading");
-                if (Installed)
+                if (Directory.Exists(QuantaxisDir))
                 {
                     PullQuantaxis();
                 }
@@ -187,34 +186,6 @@ namespace Quantom
                     {
                         MessageBox.Show("Python 3 is not installed. Please install Python Anaconda");
                         Process.Start("https://www.anaconda.com/download");
-                        return false;
-                    }
-                    return true;
-                }
-            }
-        }
-        private bool CheckNodeVersion()
-        {
-            ProcessStartInfo start = new ProcessStartInfo()
-            {
-                FileName = @"cmd.exe", // Specify exe name.
-                Arguments = "/c node --version",
-                UseShellExecute = false,
-                RedirectStandardError = true,
-                CreateNoWindow = true
-            };
-            start.Environment.Add("PATH", PATH);
-            using (Process pro = Process.Start(start))
-            {
-                using (StreamReader reader = pro.StandardError)
-                {
-                    string result = reader.ReadToEnd();
-                    _output += result;
-                    OnPropertyChanged("Output");
-                    if (result.Length > 10 && result.Substring(0, 6) == "'node'")
-                    {
-                        MessageBox.Show("Node.js is not installed. Please install Node.js");
-                        Process.Start("https://nodejs.org/");
                         return false;
                     }
                     return true;
@@ -273,7 +244,6 @@ namespace Quantom
                         MessageBox.Show("Git clone failed");
                         return false;
                     }
-                    Installed = Directory.Exists(QuantaxisDir);
                     return true;
                 }
             }
@@ -332,38 +302,33 @@ namespace Quantom
        
         private void __StartQuantaxis(object obj)
         {
-            if (!Installed)
+            if (!File.Exists(BackendFile))
             {
-                MessageBox.Show("先下载Quantaxis. 请点击右边按钮");
+                MessageBox.Show("Backend 执行文件丢失");
                 return;
             }
             _output = "";
             OnPropertyChanged("Output");
-            ProcessStartInfo info = new ProcessStartInfo(@"cmd.exe")
+            ProcessStartInfo info = new ProcessStartInfo(BackendFile)
             {
-                WorkingDirectory = Path.Combine(QuantaxisDir, "QUANTAXIS_Webkit"),
-                Arguments = "/c npm run install && npm install forever -g && forever start backend\\bin\\www && cd web && forever start build\\dev-server.js",
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 CreateNoWindow = true
             };
-            info.Environment.Add("PATH", PATH);
-            process = new Process
+            backendProcess = new Process
             {
-                StartInfo = info,
-                EnableRaisingEvents = true
+                StartInfo = info
             };
-            process.Exited += (sender, args) =>
+            backendTask = Task.Run(() =>
             {
-                process.Dispose();
-                Running = true;
-                OnPropertyChanged("ToggleLabel");
-                OnPropertyChanged("ToggleQuantaxis");
-            };
-            process.Start();
-            process.OutputDataReceived += new DataReceivedEventHandler(OutputHandler); 
-            process.BeginOutputReadLine();
+                backendProcess.Start();
+                backendProcess.OutputDataReceived += new DataReceivedEventHandler(OutputHandler);
+                backendProcess.BeginOutputReadLine();
+                backendProcess.WaitForExit();
+            });
+            OnPropertyChanged("ToggleLabel");
+            OnPropertyChanged("ToggleQuantaxis");
         }
         private void OutputHandler(object sendingProcess, DataReceivedEventArgs outLine)
         {
@@ -376,33 +341,11 @@ namespace Quantom
         }
         public void __StopQuantaxis(object obj)
         {
-            ProcessStartInfo info = new ProcessStartInfo(@"cmd.exe")
-            {
-                WorkingDirectory = Path.Combine(QuantaxisDir, "QUANTAXIS_Webkit"),
-                Arguments = "/c forever stopall",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                CreateNoWindow = true
-            };
-            info.Environment.Add("PATH", PATH);
-            process = new Process
-            {
-                StartInfo = info,
-                EnableRaisingEvents = true
-            };
-            process.Exited += (sender, args) =>
-            {
-                process.Dispose();
-                Running = false;
-                OnPropertyChanged("ToggleLabel");
-                OnPropertyChanged("ToggleQuantaxis");
-            };
-            _output = "";
-            OnPropertyChanged("Output");
-            process.Start();
-            process.OutputDataReceived += new DataReceivedEventHandler(OutputHandler);
-            process.BeginOutputReadLine();
+            backendProcess.Kill();
+            backendProcess.Dispose();
+            backendTask.Wait();
+            OnPropertyChanged("ToggleLabel");
+            OnPropertyChanged("ToggleQuantaxis");
         }
         public void FreshSetting(object sender, System.EventArgs e)
         {
