@@ -7,13 +7,13 @@
         xmlns:Properties="clr-namespace:Quantom.Properties" x:Class="Quantom.MainWindow"
         mc:Ignorable="d"
         ResizeMode="NoResize"
-        Title="Quantom for Quantaxis" Height="350" Width="380">
+        Title="Quantom for Quantaxis" Height="350" Width="430">
     <Grid>
         <Grid.DataContext>
             <local:MainViewModel/>
         </Grid.DataContext>
         <StackPanel Orientation="Vertical" 
-                    Width="360" 
+                    Width="410" 
                     MinWidth="360"
                     RenderTransformOrigin="0.5,0.5" 
                     HorizontalAlignment="Center" 
@@ -52,22 +52,22 @@
                            Text="{Binding Output}"/>
             <DockPanel Margin="5,10,5,0" HorizontalAlignment="Center">
                 <Button Content="{Binding ToggleLabel}" 
-                        Width="75"
+                        Width="90"
                         Margin="5,0,5,0"
                         Command="{Binding ToggleQuantaxis}"/>
                 <Button Content="{Binding FrontendLabel}" 
-                        Width="75"
+                        Width="90"
                         Margin="5,0,5,0"
                         Command="{Binding ToggleFrontend}"/>
+                <Button Content="启动QA Worker" 
+                        Width="90" 
+                        Margin="5,0,5,0"
+                        IsEnabled="False"
+                        Command="{Binding ToggleWorker}"/>
                 <Button Content="修改设置" 
-                        Width="75" 
+                        Width="90" 
                         Margin="5,0,5,0"
                         Command="{Binding OpenSettingWindow}"/>
-                <Button Content="下载/更新" 
-                        Width="75" 
-                        Margin="5,0,5,0"
-                        IsEnabled="{Binding NotLoading}"
-                        Command="{Binding DownloadOrUpdate}"/>
             </DockPanel>
         </StackPanel>
     </Grid>

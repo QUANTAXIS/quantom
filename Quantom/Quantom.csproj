@@ -79,12 +79,6 @@
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
-    <Reference Include="Unosquare.Labs.EmbedIO, Version=1.11.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\EmbedIO.1.11.3\lib\net46\Unosquare.Labs.EmbedIO.dll</HintPath>
-    </Reference>
-    <Reference Include="Unosquare.Swan, Version=0.18.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Unosquare.Swan.0.18.0\lib\net452\Unosquare.Swan.dll</HintPath>
-    </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -98,6 +92,7 @@
     <Compile Include="Commands\RelayCommand.cs" />
     <Compile Include="MainViewModel.cs" />
     <Compile Include="Models\VersionDetail.cs" />
+    <Compile Include="Models\HTTPServer.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="SettingViewModel.cs" />
     <Compile Include="SettingWindow.xaml.cs">

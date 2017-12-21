@@ -4,15 +4,15 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using Newtonsoft.Json;
-using Quantom.Commands;
-using Unosquare.Labs.EmbedIO;
-using Unosquare.Labs.EmbedIO.Modules;
+using Quantom.Commands; 
 
 namespace Quantom
 {
@@ -26,10 +26,8 @@ namespace Quantom
         private string QuantaxisDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "quantaxis"); 
         private string FrontendRoot = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "frontend");
         private string BackendFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "quantaxisbackend.exe");
-        private CancellationTokenSource frontendCancellor;
-        private WebServer frontendServer;
+        private Models.HTTPServer frontendServer = new Models.HTTPServer(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "frontend"), IPAddress.Loopback.ToString(), 8080);
         private bool Loading = false;
-        private Task frontendTask = Task.CompletedTask;
         private Task backendTask = Task.CompletedTask;
         private Process backendProcess;
         private string _output;
@@ -66,12 +64,13 @@ namespace Quantom
         {
             get
             {
-                if (frontendTask.IsCompleted)
+                if (frontendServer.thread == null)
                     return "启动网页服务"; 
                 else
                     return "关闭网页服务";
             }
         }
+
         public string Output
         {
             get { return _output; } set { _output = value; }
@@ -106,7 +105,7 @@ namespace Quantom
         {
             get { return _OpenSettingWindow; }
         }
-        public ICommand DownloadOrUpdate
+        public ICommand ToggleWorker
         {
             get { return _DownloadOrUpdate; }
         }
@@ -124,7 +123,7 @@ namespace Quantom
         {
             get
             {
-                if (frontendTask.IsCompleted)
+                if (frontendServer.thread == null)
                     return _StartFrontend;
                 else
                     return _StopFrontend;
@@ -147,19 +146,8 @@ namespace Quantom
             OnPropertyChanged("Output");
             await Task.Run(() =>
             {
-                if (!CheckPythonVersion()) return;
-                if (!CheckGitVersion()) return;
                 Loading = true;
                 OnPropertyChanged("NotLoading");
-                if (Directory.Exists(QuantaxisDir))
-                {
-                    PullQuantaxis();
-                }
-                else
-                {
-                    CloneQuantaxis();
-                }
-                InstallQuantaxis();
                 Loading = false;
                 OnPropertyChanged("NotLoading");
             });
@@ -191,114 +179,7 @@ namespace Quantom
                     return true;
                 }
             }
-        }
-        private bool CheckGitVersion()
-        {
-            ProcessStartInfo start = new ProcessStartInfo()
-            {
-                FileName = @"cmd.exe", // Specify exe name.
-                Arguments = "/c git --version",
-                UseShellExecute = false,
-                RedirectStandardError = true,
-                CreateNoWindow = true
-            };
-            start.Environment.Add("PATH", PATH);
-            using (Process pro = Process.Start(start))
-            {
-                using (StreamReader reader = pro.StandardError)
-                {
-                    string result = reader.ReadToEnd();
-                    _output += result;
-                    OnPropertyChanged("Output");
-                    if (result.Length > 10 && result.Substring(0, 5) == "'git'")
-                    {
-                        MessageBox.Show("Git is not installed. Please install Git");
-                        Process.Start("https://git-scm.com/download");
-                        return false;
-                    }
-                    return true;
-                }
-            }
-        }
-        private bool CloneQuantaxis()
-        {
-            ProcessStartInfo start = new ProcessStartInfo()
-            {
-                FileName = @"cmd.exe", // Specify exe name.
-                Arguments = "/c git clone https://github.com/yutiansut/QUANTAXIS.git quantaxis --depth 1",
-                WorkingDirectory = AppDir,
-                UseShellExecute = false,
-                RedirectStandardError = true,
-                CreateNoWindow = true
-            };
-            start.Environment.Add("PATH", PATH);
-            using (Process pro = Process.Start(start))
-            {
-                using (StreamReader reader = pro.StandardError)
-                {
-                    string result = reader.ReadToEnd();
-                    _output += result;
-                    OnPropertyChanged("Output");
-                    if (result.Substring(0, 7) != "Cloning")
-                    {
-                        MessageBox.Show("Git clone failed");
-                        return false;
-                    }
-                    return true;
-                }
-            }
-        }
-        private void PullQuantaxis()
-        {
-            ProcessStartInfo start = new ProcessStartInfo()
-            {
-                FileName = @"cmd.exe", // Specify exe name.
-                Arguments = "/c git pull",
-                WorkingDirectory = QuantaxisDir,
-                UseShellExecute = false,
-                RedirectStandardError = true,
-                CreateNoWindow = true
-            };
-            start.Environment.Add("PATH", PATH);
-            using (Process pro = Process.Start(start))
-            {
-                using (StreamReader reader = pro.StandardError)
-                {
-                    string result = reader.ReadToEnd();
-                    _output += result;
-                    OnPropertyChanged("Output");
-                    if (result.Length > 1) MessageBox.Show("Git pull update failed");
-                }
-            }
-        }
-
-        private void InstallQuantaxis()
-        {
-            ProcessStartInfo start = new ProcessStartInfo()
-            {
-                FileName = @"cmd.exe", // Specify exe name.
-                Arguments = "/c pip install -r requirements.txt -i https://pypi.doubanio.com/simple && pip install tushare==0.8.7 && pip install -e .",
-                WorkingDirectory = QuantaxisDir,
-                UseShellExecute = false,
-                RedirectStandardError = true,
-                CreateNoWindow = true
-            };
-            start.Environment.Add("PATH", PATH);
-            using (Process pro = Process.Start(start))
-            {
-                using (StreamReader reader = pro.StandardError)
-                {
-                    string result = reader.ReadToEnd();
-                    _output += result;
-                    OnPropertyChanged("Output");
-                    if (result.Length > 0)
-                    {
-                        MessageBox.Show("Pip install Quantaxis failed");
-                    }
-                    else MessageBox.Show("Quantaxis installed"); 
-                }
-            }
-        }
+        }         
        
         private void __StartQuantaxis(object obj)
         {
@@ -360,25 +241,16 @@ namespace Quantom
             {
                 MessageBox.Show("frontend folder is missing.");
                 return;
-            }
-            var url = "http://localhost:8080/";
-            frontendServer = new WebServer(url);
-            frontendServer.RegisterModule(new StaticFilesModule(FrontendRoot));
-            frontendServer.Module<StaticFilesModule>().UseRamCache = true;
-            frontendServer.Module<StaticFilesModule>().DefaultExtension = ".html";
-            // We don't need to add the line below. The default document is always index.html.
-            //server.Module<Modules.StaticFilesWebModule>().DefaultDocument = "index.html";
-            frontendCancellor = new CancellationTokenSource();
-            frontendTask = frontendServer.RunAsync(frontendCancellor.Token);
+            }           
+            frontendServer.Start();
             OnPropertyChanged("FrontendLabel");
             OnPropertyChanged("ToggleFrontend");
         }
         public void __StopFrontend(object obj)
         {
-            frontendCancellor.Cancel();
-            frontendTask.Wait();
+            frontendServer.Stop();
             OnPropertyChanged("FrontendLabel");
             OnPropertyChanged("ToggleFrontend");
         }
-    }    
+    }        
 }
