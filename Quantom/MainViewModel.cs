@@ -241,6 +241,7 @@ namespace Quantom
             frontendServer.Start();
             OnPropertyChanged("FrontendLabel");
             OnPropertyChanged("ToggleFrontend");
+            Process.Start("http://" + IPAddress.Loopback.ToString() + ":8080");
         }
 
         public void __StopFrontend(object obj)
