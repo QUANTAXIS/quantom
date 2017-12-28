@@ -263,3 +263,5 @@ dist
 *.egg-info
 *.exe
 frontend/
+vendor
+.tmp.*

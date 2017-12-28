@@ -5,4 +5,5 @@
 OutputBaseFilename=quantom_for_quantaxis_x86_v{#MyAppVersion}
 
 [Files]
-Source: "D:\Workspace\quantom\vendor\quantaxisbackend-x86.exe"; DestDir: "{app}"; DestName: "quantaxisbackend.exe"; Flags: ignoreversion 
+Source: "{#SourcePath}\vendor\TA_Lib-0.4.10-cp36-cp36m-win32.whl"; DestName: "TA_Lib-0.4.10-cp36-none-any.whl"; Flags: dontcopy
+Source: "D:\Workspace\quantom\vendor\quantaxisbackend-x86.exe"; DestDir: "{app}"; DestName: "quantaxisbackend.exe"; Flags: ignoreversion

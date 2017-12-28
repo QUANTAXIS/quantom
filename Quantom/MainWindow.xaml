@@ -46,7 +46,7 @@
                           ScrollViewer.CanContentScroll="True"
                            ScrollViewer.VerticalScrollBarVisibility="Auto"
                            Width="Auto"
-                           Height="130" 
+                           Height="200" 
                            Foreground="Green"
                            TextWrapping="Wrap"                           
                            Text="{Binding Output}"/>

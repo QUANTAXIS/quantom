@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 #include <idp.iss>
 #define MyAppName "Quantom For Quantaxis"
-#define MyAppVersion GetFileVersion("D:\Workspace\quantom\Quantom\bin\Release\Quantom.exe")
+#define MyAppVersion GetFileVersion("Quantom\bin\Release\Quantom.exe")
 #define MyAppPublisher "Quantom"
 #define MyAppURL "https://github.com/hardywu/quantom"
 #define MyAppExeName "Quantom.exe"
@@ -21,8 +21,9 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\{#MyAppName}
 DisableProgramGroupPage=yes
-OutputDir=D:\Workspace\quantom\dist
+OutputDir=dist
 ;OutputBaseFilename=quantom_for_quantaxis_v{#MyAppVersion}
+SetupIconFile=Quantom\TrayIcon.ico
 Compression=lzma
 SolidCompression=yes
 VersionInfoVersion={#MyAppVersion}
@@ -33,27 +34,34 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
+Name: startup; Description: "Automatically start on login"; GroupDescription: "{cm:AdditionalIcons}"
 ;Name: "install quantaxis python pkg"; Description: "install requests"; StatusMsg: "Installing requests..."; BeforeInstall: MyAfterInstall
- 
-[Files] 
-Source: "D:\Workspace\quantom\Quantom\bin\Release\Quantom.exe"; DestDir: "{app}"; Flags: ignoreversion; 
-Source: "D:\Workspace\quantom\Quantom\bin\Release\Quantom.exe.config"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Workspace\quantom\Quantom\bin\Release\Hardcodet.Wpf.TaskbarNotification.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Workspace\quantom\Quantom\bin\Release\Newtonsoft.Json.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Workspace\quantom\Quantom\frontend\*"; DestDir: "{app}\frontend"; Flags: ignoreversion recursesubdirs createallsubdirs
+
+[Files]
+Source: "{#SourcePath}\vendor\add_conda_channels.bat"; Flags: dontcopy
+Source: "Quantom\bin\Release\Quantom.exe"; DestDir: "{app}"; Flags: ignoreversion;
+Source: "Quantom\bin\Release\Quantom.exe.config"; DestDir: "{app}"; Flags: ignoreversion
+Source: "Quantom\bin\Release\Hardcodet.Wpf.TaskbarNotification.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "Quantom\bin\Release\Newtonsoft.Json.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "Quantom\frontend\*"; DestDir: "{app}\frontend"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#SourcePath}\vendor\pip.ini"; DestDir: "{userappdata}\pip"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
 Name: "{commonprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{userstartup}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: startup
+Name: "{commondesktop}\{#MyAppName} Prompt"; Filename: "{win}\System32\cmd.exe"; Parameters: "/K {app}\Scripts\activate.bat {app}"; WorkingDir: "{app}"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
 [Code]
-// References:
-//   https://blogs.msdn.microsoft.com/davidrickard/2015/07/17/installing-net-framework-4-5-automatically-with-inno-setup/
-//   https://stackoverflow.com/questions/20752882/how-can-i-install-net-framework-as-a-prerequisite-using-innosetup
+{
+  References:
+    https://blogs.msdn.microsoft.com/davidrickard/2015/07/17/installing-net-framework-4-5-automatically-with-inno-setup/
+    https://stackoverflow.com/questions/20752882/how-can-i-install-net-framework-as-a-prerequisite-using-innosetup
+}
 function _FrameworkIsNotInstalled: Boolean;
 begin
   Result :=true;
@@ -63,60 +71,82 @@ function FrameworkIsNotInstalled: Boolean;
 var
   ver: Cardinal;
 begin
-  Result :=
-    not (
+  Result := not (
     (
-    (RegKeyExists(
-      HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Client')
-    and
-        RegQueryDWordValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Client', 'Release', ver)
-    )
-    or
-    (RegKeyExists(
-      HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full')
-    and
-        RegQueryDWordValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full', 'Release', ver)
-    )
+      (
+        RegKeyExists(HKLM,
+          'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Client')
+        and
+        RegQueryDWordValue(HKLM,
+          'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Client',
+          'Release',
+          ver)
+      )
+      or
+      (
+        RegKeyExists(HKCU,
+          'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full')
+        and
+        RegQueryDWordValue(HKCU,
+          'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full',
+          'Release',
+          ver)
+      )
     )
     and (ver >= 393295))     // .Net 4.6 Release DWORD
 end;
 
 function PythonIsNotInstalled: Boolean;
 var
-  Names: TArrayOfString;
-  ver: Cardinal;
+  Vers: TArrayOfString;
 begin
-  Result :=
-    not
-    ((
-     (
-      RegKeyExists(HKCU, 'SOFTWARE\Software\Python\PythonCore')
-      and
-      RegKeyExists(HKCU, 'SOFTWARE\Software\Python\ContinuumAnalytics')
-      and
-      RegGetSubkeyNames(HKCU, 'SOFTWARE\Software\Python\PythonCore', Names)
-     )
-     or
-     (
-      RegKeyExists(HKLM, 'SOFTWARE\Software\Python\PythonCore')
-      and
-      RegKeyExists(HKLM, 'SOFTWARE\Software\Python\ContinuumAnalytics')
-      and
-      RegGetSubkeyNames(HKLM, 'SOFTWARE\Software\Python\PythonCore', Names)
-     ))
-     and (GetArrayLength(Names) = 1) 
-     and (Names[0] >= '3.6') 
+  Result := not (
+    (     
+      RegGetSubkeyNames(HKCU, 'SOFTWARE\Python\ContinuumAnalytics', Vers)
+      or
+      RegGetSubkeyNames(HKLM, 'SOFTWARE\Python\ContinuumAnalytics', Vers)      
     )
+    and (Vers[0] >= '3.6') );
 end;
 
+function MultiplePythonInstalled: Boolean;
+var
+  Vers: TArrayOfString;
+begin
+  Result := 
+    (      
+      RegGetSubkeyNames(HKCU, 'SOFTWARE\Python\PythonCore', Vers)      
+      or
+      RegGetSubkeyNames(HKLM, 'SOFTWARE\Python\PythonCore', Vers)      
+    )
+    and (GetArrayLength(Vers) > 1);
+end;   
 
 var CancelWithoutPrompt: boolean;
 
+function PythonPath(Out path: String): Boolean;
+var
+  Vers: TArrayOfString;
+begin
+  Result := (
+      RegGetSubkeyNames(HKLM, 'SOFTWARE\Python\ContinuumAnalytics', Vers) 
+      or 
+      RegGetSubkeyNames(HKCU, 'SOFTWARE\Python\ContinuumAnalytics', Vers)
+    ) 
+    and 
+    (
+      RegQueryStringValue(HKCU, 'SOFTWARE\Python\ContinuumAnalytics\' + Vers[0] + '\InstallPath', '', path) 
+      or 
+      RegQueryStringValue(HKLM, 'SOFTWARE\Python\ContinuumAnalytics\' + Vers[0] + '\InstallPath', '', path)
+    );   
+end;
+// Procedures
+
 procedure MyAfterInstall();
-begin  
-    MsgBox('Should cancel because...',mbError,MB_OK)
-    CancelWithoutPrompt := true;
-    WizardForm.Close;
+begin
+  MsgBox('Should cancel because...',mbError,MB_OK)
+  CancelWithoutPrompt := true;
+  WizardForm.Close;
 end;
 
 procedure InitializeWizard;
@@ -124,8 +154,15 @@ begin
   if FrameworkIsNotInstalled() then
   begin
     idpAddFile('http://go.microsoft.com/fwlink/?LinkId=528232', ExpandConstant('{tmp}\NetFrameworkInstaller.exe'));
-    idpDownloadAfter(wpReady);
   end;
+  if PythonIsNotInstalled() then
+  begin
+    if IsWin64() then
+      idpAddFile('https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda3-latest-Windows-x86_64.exe', ExpandConstant('{tmp}\MiniCondaInstaller.exe'))
+    else 
+      idpAddFile('https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda3-latest-Windows-x86.exe', ExpandConstant('{tmp}\MiniCondaInstaller.exe'));
+  end;
+  idpDownloadAfter(wpUserInfo);
 end;
 
 procedure CancelButtonClick(CurPageID: Integer; var Cancel, Confirm: Boolean);
@@ -158,15 +195,64 @@ begin
   end;
 end;
 
+procedure InstallPython;
+var
+  StatusText: string;
+  ResultCode: Integer;
+begin
+  StatusText := WizardForm.StatusLabel.Caption;
+  WizardForm.StatusLabel.Caption := 'Installing MiniConda Python...';
+  WizardForm.ProgressGauge.Style := npbstMarquee;
+  try
+      if not Exec(ExpandConstant('{tmp}\MiniCondaInstaller.exe'), '/passive /norestart', '', SW_SHOW, ewWaitUntilTerminated, ResultCode) then
+  begin
+    // you can interact with the user that the installation failed
+    MsgBox('MiniConda Python install failed with code: ' + IntToStr(ResultCode) + '.',
+      mbError, MB_OK);
+    CancelWithoutPrompt := true;
+    WizardForm.Close;
+  end;
+  finally
+    WizardForm.StatusLabel.Caption := StatusText;
+    WizardForm.ProgressGauge.Style := npbstNormal;
+    DeleteFile(ExpandConstant('{tmp}\MiniCondaInstaller.exe'));
+  end;
+end;
+
 procedure CurStepChanged(CurStep: TSetupStep);
+var
+  PyPath: String;
+  ResultCode: Integer;
 begin
   case CurStep of
-    ssPostInstall:
+    ssInstall:
       begin
+        if PythonIsNotInstalled() then 
+        begin
+          InstallPython();
+        end;
         if FrameworkIsNotInstalled() then
         begin
           InstallFramework();
         end;
+      end;
+    ssPostInstall:
+      begin
+        if PythonPath(PyPath) then
+        begin
+          ExtractTemporaryFiles('{tmp}\add_conda_channels.bat');
+          ExtractTemporaryFiles('{tmp}\TA_Lib-0.4.10-cp36-none-any.whl');          
+          WizardForm.StatusLabel.Caption := 'Updating python environment';
+          Exec('cmd.exe', '/C "'+ExpandConstant('{tmp}\add_conda_channels.bat') +'"' , AddBackslash(PyPath)+ 'Scripts', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+          // https://wingware.com/doc/howtos/virtualenv     
+          WizardForm.StatusLabel.Caption := 'Creating python virtual environment in app dir';
+          Exec(AddBackslash(PyPath)+ 'python.exe', '-m venv --system-site-packages .', ExpandConstant('{app}'), SW_HIDE, ewWaitUntilTerminated, ResultCode);
+          WizardForm.StatusLabel.Caption := 'Installing quantaxis python package';
+          Exec(ExpandConstant('{app}\Scripts\pip.exe'), ExpandConstant('install {tmp}\TA_Lib-0.4.10-cp36-none-any.whl'), ExpandConstant('{app}'), SW_HIDE, ewWaitUntilTerminated, ResultCode);
+          Exec(ExpandConstant('{app}\Scripts\pip.exe'), 'install -U quantaxis', ExpandConstant('{app}'), SW_HIDE, ewWaitUntilTerminated, ResultCode);
+        end
+        else
+          MsgBox('no python path' + PyPath, mbInformation, MB_OK);
       end;
   end;
 end;
