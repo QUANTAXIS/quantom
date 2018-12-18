@@ -51,10 +51,13 @@ Source: "{#SourcePath}\vendor\pip.ini"; DestDir: "{userappdata}\pip"; Flags: ign
 Name: "{commonprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 Name: "{userstartup}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: startup
-Name: "{commondesktop}\{#MyAppName} Prompt"; Filename: "{win}\System32\cmd.exe"; Parameters: "/K {app}\Scripts\activate.bat {app}"; WorkingDir: "{app}"; Tasks: desktopicon
+Name: "{commondesktop}\{#MyAppName} Prompt"; Filename: "{win}\System32\cmd.exe"; Parameters: "/K ""{app}\Scripts\activate.bat"" ""{app}"""; WorkingDir: "{app}"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+
+[Dirs]
+Name: "{app}\frontend"; Flags: deleteafterinstall
 
 [Code]
 {
@@ -62,10 +65,6 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChang
     https://blogs.msdn.microsoft.com/davidrickard/2015/07/17/installing-net-framework-4-5-automatically-with-inno-setup/
     https://stackoverflow.com/questions/20752882/how-can-i-install-net-framework-as-a-prerequisite-using-innosetup
 }
-function _FrameworkIsNotInstalled: Boolean;
-begin
-  Result :=true;
-end;
 
 function FrameworkIsNotInstalled: Boolean;
 var
@@ -73,25 +72,15 @@ var
 begin
   Result := not (
     (
-      (
-        RegKeyExists(HKLM,
-          'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Client')
-        and
-        RegQueryDWordValue(HKLM,
-          'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Client',
-          'Release',
-          ver)
-      )
-      or
-      (
-        RegKeyExists(HKCU,
-          'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full')
-        and
-        RegQueryDWordValue(HKCU,
-          'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full',
-          'Release',
-          ver)
-      )
+      RegQueryDWordValue(HKLM,
+        'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Client',
+        'Release',
+        ver) 
+      or 
+      RegQueryDWordValue(HKCU,
+        'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full',
+        'Release',
+        ver)
     )
     and (ver >= 393295))     // .Net 4.6 Release DWORD
 end;
@@ -124,7 +113,7 @@ end;
 
 var CancelWithoutPrompt: boolean;
 
-function PythonPath(Out path: String): Boolean;
+function QueryPythonPath(Out path: String): Boolean;
 var
   Vers: TArrayOfString;
 begin
@@ -238,7 +227,7 @@ begin
       end;
     ssPostInstall:
       begin
-        if PythonPath(PyPath) then
+        if QueryPythonPath(PyPath) then
         begin
           ExtractTemporaryFiles('{tmp}\add_conda_channels.bat');
           ExtractTemporaryFiles('{tmp}\TA_Lib-0.4.10-cp36-none-any.whl');          
